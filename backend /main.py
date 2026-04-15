@@ -25,9 +25,7 @@ ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/tiff", "image/b
 MAX_SIZE_MB = 10
 
 
-# =========================
-# OCR + PREPROCESSING
-# =========================
+
 
 def preprocess_image_from_bytes(image_bytes):
     nparr = np.frombuffer(image_bytes, np.uint8)
@@ -38,7 +36,7 @@ def preprocess_image_from_bytes(image_bytes):
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # Noise reduction
+
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
 
     # Threshold
@@ -47,9 +45,7 @@ def preprocess_image_from_bytes(image_bytes):
     return thresh
 
 
-# =========================
-# PARSING FUNCTIONS
-# =========================
+
 
 def clean_text(text):
     text = text.lower()
@@ -85,31 +81,9 @@ def extract_vendor(text):
     return "Unknown"
 
 
-# =========================
-# CATEGORIZATION
-# =========================
-
-def categorize(text):
-    text = text.lower()
-
-    if any(word in text for word in ["uber", "ola", "rapido", "taxi"]):
-        return "Travel"
-
-    elif any(word in text for word in ["zomato", "swiggy", "restaurant", "cafe", "pizza"]):
-        return "Food"
-
-    elif any(word in text for word in ["amazon", "flipkart", "store"]):
-        return "Shopping"
-
-    elif any(word in text for word in ["fuel", "petrol", "diesel"]):
-        return "Fuel"
-
-    return "Other"
 
 
-# =========================
-# MAIN OCR FUNCTION
-# =========================
+
 
 def extract_text_from_image(image_bytes):
     image = preprocess_image_from_bytes(image_bytes)
@@ -131,7 +105,7 @@ def extract_text_from_image(image_bytes):
     "date": extract_date(cleaned),
     }
 
-    # 🔥 Advanced MCC-based categorization
+
     category_data = categorize_receipt(raw_text)
 
     parsed["category"] = category_data["category"]
@@ -148,10 +122,6 @@ def extract_text_from_image(image_bytes):
         "parsed": parsed
     }
 
-
-# =========================
-# ROUTES
-# =========================
 
 @app.get("/health")
 async def health():
@@ -194,9 +164,6 @@ async def extract(file: UploadFile = File(...)):
     })
 
 
-# =========================
-# RUN SERVER
-# =========================
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
